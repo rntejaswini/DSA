@@ -1,0 +1,109 @@
+import java.util.*;
+
+class Solution {
+
+    static class SegmentTree {
+        int[] mn, mx, lazy;
+        int n;
+
+        SegmentTree(int[] arr) {
+            n = arr.length;
+            mn = new int[4 * n];
+            mx = new int[4 * n];
+            lazy = new int[4 * n];
+            build(1, 0, n - 1, arr);
+        }
+
+        void build(int idx, int start, int end, int[] arr) {
+            if (start == end) {
+                mn[idx] = mx[idx] = arr[start];
+                return;
+            }
+            int mid = (start + end) / 2;
+            build(idx * 2, start, mid, arr);
+            build(idx * 2 + 1, mid + 1, end, arr);
+            pushUp(idx);
+        }
+
+        void pushUp(int idx) {
+            mn[idx] = Math.min(mn[idx * 2], mn[idx * 2 + 1]);
+            mx[idx] = Math.max(mx[idx * 2], mx[idx * 2 + 1]);
+        }
+
+        void apply(int idx, int val) {
+            mn[idx] += val;
+            mx[idx] += val;
+            lazy[idx] += val;
+        }
+
+        void pushDown(int idx) {
+            if (lazy[idx] != 0) {
+                apply(idx * 2, lazy[idx]);
+                apply(idx * 2 + 1, lazy[idx]);
+                lazy[idx] = 0;
+            }
+        }
+
+        void updateRange(int idx, int start, int end, int l, int r, int val) {
+            if (l > end || r < start) return;
+            if (l <= start && end <= r) {
+                apply(idx, val);
+                return;
+            }
+            pushDown(idx);
+            int mid = (start + end) / 2;
+            updateRange(idx * 2, start, mid, l, r, val);
+            updateRange(idx * 2 + 1, mid + 1, end, l, r, val);
+            pushUp(idx);
+        }
+
+        int findRightmostZero(int idx, int start, int end) {
+            if (mn[idx] > 0 || mx[idx] < 0) return -1;
+            if (start == end) return start;
+            pushDown(idx);
+            int mid = (start + end) / 2;
+            int res = findRightmostZero(idx * 2 + 1, mid + 1, end);
+            if (res == -1) res = findRightmostZero(idx * 2, start, mid);
+            return res;
+        }
+    }
+
+    public int longestBalanced(int[] nums) {
+        int n = nums.length;
+
+        Map<Integer, Integer> lastSeen = new HashMap<>();
+        int[] nextPos = new int[n];
+        Arrays.fill(nextPos, n);
+        for (int i = n - 1; i >= 0; i--) {
+            if (lastSeen.containsKey(nums[i])) {
+                nextPos[i] = lastSeen.get(nums[i]);
+            }
+            lastSeen.put(nums[i], i);
+        }
+
+        int[] prefix = new int[n];
+        Set<Integer> seen = new HashSet<>();
+        int balance = 0;
+        for (int i = 0; i < n; i++) {
+            if (!seen.contains(nums[i])) {
+                balance += (nums[i] % 2 == 0 ? -1 : 1);
+                seen.add(nums[i]);
+            }
+            prefix[i] = balance;
+        }
+
+        SegmentTree st = new SegmentTree(prefix);
+        int ans = 0;
+        int r0 = st.findRightmostZero(1, 0, st.n - 1);
+        if (r0 != -1) ans = r0 + 1;
+
+        for (int i = 1; i < n; i++) {
+            int val = nums[i - 1] % 2 == 0 ? 1 : -1;
+            st.updateRange(1, 0, st.n - 1, i, nextPos[i - 1] - 1, val);
+            int idx = st.findRightmostZero(1, 0, st.n - 1);
+            if (idx >= i) ans = Math.max(ans, idx - i + 1);
+        }
+
+        return ans;
+    }
+}
