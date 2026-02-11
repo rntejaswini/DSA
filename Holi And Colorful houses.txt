@@ -1,0 +1,44 @@
+#include <stdio.h>
+#include <string.h>
+
+int main() {
+    int T;
+    scanf("%d", &T);
+
+    while (T--) {
+        int N, Q;
+        scanf("%d %d", &N, &Q);
+        char S[N+1];
+        scanf("%s", S);
+
+        int diff[N], prefix[N+1];
+        prefix[0] = 0;
+
+        // Compute differences (circular)
+        for(int i = 0; i < N; i++) {
+            if(S[i] != S[(i+1)%N])
+                diff[i] = 1;
+            else
+                diff[i] = 0;
+            prefix[i+1] = prefix[i] + diff[i];
+        }
+
+        int total_sweets = prefix[N];
+
+        for(int q = 0; q < Q; q++) {
+            int x, y;
+            scanf("%d %d", &x, &y);
+
+            int sweets_cw;
+            if(x <= y)
+                sweets_cw = prefix[y-1] - prefix[x-1];
+            else
+                sweets_cw = prefix[N] - prefix[x-1] + prefix[y-1];
+
+            int sweets_ccw = total_sweets - sweets_cw;
+            printf("%d\n", sweets_cw < sweets_ccw ? sweets_cw : sweets_ccw);
+        }
+    }
+
+    return 0;
+}
