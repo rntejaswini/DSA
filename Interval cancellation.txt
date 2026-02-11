@@ -1,0 +1,20 @@
+/**
+ * @param {Function} fn
+ * @param {Array} args
+ * @param {number} t
+ * @return {Function}
+ */
+var cancellable = function(fn, args, t) {
+    // Call fn immediately with provided args
+    fn(...args);
+
+    // Set up interval to call fn every t ms
+    const intervalId = setInterval(() => {
+        fn(...args);
+    }, t);
+
+    // Return a cancel function that stops the interval
+    return () => {
+        clearInterval(intervalId);
+    };
+};
