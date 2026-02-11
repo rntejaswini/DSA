@@ -1,0 +1,30 @@
+#include <stdio.h>
+#include <string.h>
+#include <math.h>
+#include <stdlib.h>
+
+int main() {
+    int n;
+    scanf("%d", &n);
+    
+    int sum = 0;
+    
+    // Extract digits and add to sum
+    sum += n % 10; // last digit
+    n /= 10;
+    
+    sum += n % 10;
+    n /= 10;
+    
+    sum += n % 10;
+    n /= 10;
+    
+    sum += n % 10;
+    n /= 10;
+    
+    sum += n % 10; // first digit (after dividing 4 times)
+    
+    printf("%d\n", sum);
+    
+    return 0;
+}
