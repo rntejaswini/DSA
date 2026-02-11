@@ -1,0 +1,98 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// Definition of Node
+typedef struct Node {
+    int data;
+    struct Node* next;
+} Node;
+
+// Function to create a new node
+Node* newNode(int data) {
+    Node* node = (Node*)malloc(sizeof(Node));
+    node->data = data;
+    node->next = NULL;
+    return node;
+}
+
+// Function to reverse a sublist from start to end
+Node* reverseSublist(Node* start, Node* end) {
+    Node *prev = NULL, *curr = start, *next = NULL;
+    Node* stop = end->next;
+
+    while (curr != stop) {
+        next = curr->next;
+        curr->next = prev;
+        prev = curr;
+        curr = next;
+    }
+
+    // prev is the new head of the reversed sublist
+    return prev;
+}
+
+// Function to print the list
+void printList(Node* head) {
+    Node* curr = head;
+    while (curr) {
+        printf("%d", curr->data);
+        if (curr->next) printf(" ");
+        curr = curr->next;
+    }
+    printf("\n");
+}
+
+int main() {
+    int n;
+    scanf("%d", &n);
+
+    Node* head = NULL;
+    Node* tail = NULL;
+
+    for (int i = 0; i < n; i++) {
+        int val;
+        scanf("%d", &val);
+        Node* node = newNode(val);
+        if (!head) {
+            head = node;
+            tail = node;
+        } else {
+            tail->next = node;
+            tail = node;
+        }
+    }
+
+    // Recover original list by reversing even sublists
+    Node* dummy = newNode(0);
+    dummy->next = head;
+    Node* prev = dummy;
+    Node* curr = head;
+
+    while (curr) {
+        if (curr->data % 2 == 0) {
+            // Start of even sublist
+            Node* start = curr;
+            while (curr->next && curr->next->data % 2 == 0)
+                curr = curr->next;
+            Node* next = curr->next;
+
+            // Reverse this sublist
+            Node* newHead = reverseSublist(start, curr);
+
+            // Connect reversed sublist back
+            prev->next = newHead;
+            start->next = next;
+
+            // Move prev and curr pointers
+            prev = start;
+            curr = next;
+        } else {
+            prev = curr;
+            curr = curr->next;
+        }
+    }
+
+    printList(dummy->next);
+
+    return 0;
+}
